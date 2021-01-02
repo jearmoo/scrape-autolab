@@ -5,7 +5,7 @@ import re
 import os
 
 
-class cd:
+class makedirs_cd:
     """Context manager for changing the current working directory"""
 
     def __init__(self, newPath):
@@ -13,6 +13,7 @@ class cd:
 
     def __enter__(self):
         self.savedPath = os.getcwd()
+        os.makedirs(self.newPath, exist_ok=True)
         os.chdir(self.newPath)
 
     def __exit__(self, etype, value, traceback):
@@ -41,7 +42,6 @@ headers = {
     'Accept-Language': 'en-US,en;q=0.9',
     'If-None-Match': 'W/"22217b9f695c7148f67bd1b593ba6fa4"',
 }
-
 
 # END
 
@@ -175,27 +175,26 @@ def process_assn(assn, course_title):
                 task_title))
         print(assn_title, task_title)
         soup = soup_autolab(task_link)
-        os.makedirs(task_dir, exist_ok=True)
-        with cd(task_dir):
-            for download_title in DOWNLOAD_TITLES:
-                download_link_soup = soup.find(
-                    "a", {"title": download_title}, href=True)
-                assert download_link_soup is not None or download_title == "Download Submission"
-                if download_link_soup is None:
-                    continue
-                download_link = download_link_soup['href']
-                download_response = request_autolab(download_link)
-                # When the download link does not contain a file, the response
-                # has Content-Type text/html
-                if download_response.headers['Content-Type'].startswith(
-                        'text/html'):
-                    continue
-                filename = get_filename(download_response)
-                print(filename, download_response.headers['Content-Type'])
+        for download_title in DOWNLOAD_TITLES:
+            download_link_soup = soup.find(
+                "a", {"title": download_title}, href=True)
+            assert download_link_soup is not None or download_title == "Download Submission"
+            if download_link_soup is None:
+                continue
+            download_link = download_link_soup['href']
+            download_response = request_autolab(download_link)
+            # When the download link does not contain a file, the response
+            # has Content-Type text/html
+            if download_response.headers['Content-Type'].startswith(
+                    'text/html'):
+                continue
+            filename = get_filename(download_response)
+            print(filename, download_response.headers['Content-Type'])
+            with makedirs_cd(task_dir):
                 with open(filename, 'wb') as f:
                     f.write(download_response.content)
-                print("->", os.path.join(task_dir, filename))
-                task_downloads.append((filename, download_link))
+            print("->", os.path.join(task_dir, filename))
+            task_downloads.append((filename, download_link))
         print()
         if len(task_downloads) > 0:
             tasks_downloads.append((task_title, task_downloads))
