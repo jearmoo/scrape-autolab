@@ -56,9 +56,11 @@ The result will look something like this
  - Python 3.8.3
 
 ## Setup
+### Install python requirements
 ```
 pip3 install -r requirements.txt
 ```
+### Copy over user authentication information
 Login to autolab, reload the page, and [copy the network request for autolab.andrew.cmu.edu as curl](https://ec.haxx.se/usingcurl/usingcurl-copyas)
 
 Convert curl to python requests code with [this](https://curl.trillworks.com/)
@@ -92,6 +94,7 @@ response = requests.get('https://autolab.andrew.cmu.edu/', headers=headers, cook
 
 Copy the `cookies = {...}` and `headers = {...}` parts to [scrape_autolab.py#L21](scrape_autolab.py#L21)
 
+### Specify the local output directory for downloaded files
 Set `OUTPUT_PATH` at [scrape_autolab.py#L50](scrape_autolab.py#L50) to the directory where you want to download assignments to
 
 ## Run
